@@ -1,0 +1,206 @@
+{
+  "info": {
+    "name": "Netflix GraphQL API",
+    "description": "Test collection for Netflix GraphQL API with authentication",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has data field', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.exist;",
+                  "});",
+                  "",
+                  "pm.test('Response has token', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.registerUser.token).to.exist;",
+                  "    pm.environment.set('auth_token', jsonData.data.registerUser.token);",
+                  "});",
+                  "",
+                  "pm.test('User email matches input', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.registerUser.user.email).to.equal(pm.environment.get('test_email'));",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const randomEmail = 'test_' + Date.now() + '@example.com';",
+                  "pm.environment.set('test_email', randomEmail);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { registerUser(email: \\\"{{test_email}}\\\", password: \\\"password123\\\", name: \\\"Test User\\\") { token user { id email name createdAt } } }\"}"
+            },
+            "url": {
+              "raw": "http://localhost:4000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000"
+            }
+          }
+        },
+        {
+          "name": "Register User - Duplicate Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has errors field', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.errors).to.exist;",
+                  "});",
+                  "",
+                  "pm.test('Error message contains duplicate email', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.errors[0].message).to.include('already exists');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { registerUser(email: \\\"anton@example.com\\\", password: \\\"password123\\\", name: \\\"Test User\\\") { token user { id email } } }\"}"
+            },
+            "url": {
+              "raw": "http://localhost:4000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000"
+            }
+          }
+        },
+        {
+          "name": "Login User - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has token', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.loginUser.token).to.exist;",
+                  "    pm.environment.set('auth_token', jsonData.data.loginUser.token);",
+                  "});",
+                  "",
+                  "pm.test('User email matches', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.loginUser.user.email).to.equal('anton@example.com');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { loginUser(email: \\\"anton@example.com\\\", password: \\\"password123\\\") { token user { id email createdAt } } }\"}"
+            },
+            "url": {
+              "raw": "http://localhost:4000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000"
+            }
+          }
+        },
+        {
+          "name": "Login User - Invalid Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has errors', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.errors).to.exist;",
+                  "});",
+                  "",
+                  "pm.test('Error message is invalid credentials', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.errors[0].message).to.include('Invalid');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { loginUser(email: \\\"anton@example.com\\\", password: \\\"wrongpassword\\\") { token user { id } } }\"}"
+            },
+            "url": {
+              "raw": "http://localhost:4000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
