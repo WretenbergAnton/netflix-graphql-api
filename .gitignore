@@ -10,3 +10,10 @@ build/
 .idea/
 *.pem
 .prisma/
+
+# Test results
+newman/
+.newman/
+
+# GitHub
+.github/secrets
