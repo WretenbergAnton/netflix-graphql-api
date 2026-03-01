@@ -1,0 +1,65 @@
+name: API Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: myapi_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Setup Prisma
+      run: npx prisma generate
+
+    - name: Run database migrations
+      run: npx prisma migrate deploy
+      env:
+        DATABASE_URL: postgresql://admin:password@localhost:5432/myapi_db
+
+    - name: Start API server
+      run: npm run dev &
+      env:
+        DATABASE_URL: postgresql://admin:password@localhost:5432/myapi_db
+
+    - name: Wait for API to be ready
+      run: sleep 5
+
+    - name: Run Postman tests
+      run: npm test
+      env:
+        DATABASE_URL: postgresql://admin:password@localhost:5432/myapi_db
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: newman-results
+        path: newman/
