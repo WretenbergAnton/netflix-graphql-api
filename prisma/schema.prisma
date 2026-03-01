@@ -16,3 +16,16 @@ model User {
 
   @@map("users")
 }
+
+model Movie {
+  id            Int     @id @default(autoincrement())
+  title         String
+  director      String?
+  releaseYear   Int?    @map("release_year")
+  genres        String?
+  rating        Float?
+  description   String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("movies")
+}
