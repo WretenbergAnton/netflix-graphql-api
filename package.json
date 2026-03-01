@@ -9,6 +9,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
+    "seed": "node prisma/seed.js",
     "test": "newman run netflix-api.postman_collection.json --environment netflix-api.postman_environment.json --reporters cli,json"
   },
   "dependencies": {
@@ -19,7 +20,8 @@
     "express": "^4.18.2",
     "graphql": "^16.8.1",
     "jsonwebtoken": "^9.0.0",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "csv-parse": "^5.4.1"
   },
   "devDependencies": {
     "newman": "^6.1.0",
