@@ -9,7 +9,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "newman run netflix-api.postman_collection.json --environment netflix-api.postman_environment.json --reporters cli,json"
   },
   "dependencies": {
     "@apollo/server": "^4.10.0",
@@ -22,6 +22,7 @@
     "pg": "^8.11.3"
   },
   "devDependencies": {
+    "newman": "^6.1.0",
     "nodemon": "^3.1.0",
     "prisma": "^5.9.0"
   }
