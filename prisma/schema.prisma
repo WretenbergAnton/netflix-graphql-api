@@ -20,7 +20,7 @@ model User {
 
 model Movie {
   id            Int     @id @default(autoincrement())
-  showId        String  @unique @map("show_id")
+  showId        String  @unique @default(uuid()) @map("show_id")
   title         String
   director      String?
   cast          String?
