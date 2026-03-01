@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Netflix GraphQL API",
-    "description": "Test collection for Netflix GraphQL API with authentication",
+    "description": "Test collection for Netflix GraphQL API with authentication and movies",
     "version": "1.0.0"
   },
   "item": [
@@ -193,6 +193,275 @@
             "body": {
               "mode": "raw",
               "raw": "{\"query\":\"mutation { loginUser(email: \\\"{{duplicate_test_email}}\\\", password: \\\"wrongpassword\\\") { token user { id } } }\"}"
+            },
+            "url": {
+              "raw": "http://localhost:4000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Movies",
+      "item": [
+        {
+          "name": "Get All Movies",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has data field', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.exist;",
+                  "});",
+                  "",
+                  "pm.test('Movies array exists', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.movies).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"query { movies(limit: 5) { id title director rating } }\"}"
+            },
+            "url": {
+              "raw": "http://localhost:4000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000"
+            }
+          }
+        },
+        {
+          "name": "Add Movie - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has movie data', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.addMovie).to.exist;",
+                  "    pm.expect(jsonData.data.addMovie.id).to.be.greaterThan(0);",
+                  "    pm.environment.set('movie_id', jsonData.data.addMovie.id);",
+                  "});",
+                  "",
+                  "pm.test('Movie title matches input', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.addMovie.title).to.equal('Test Movie');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { addMovie(title: \\\"Test Movie\\\", director: \\\"Test Director\\\", releaseYear: 2024, genres: \\\"Action\\\", rating: 8.5, description: \\\"A test movie\\\") { id title director rating createdAt } }\"}"
+            },
+            "url": {
+              "raw": "http://localhost:4000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000"
+            }
+          }
+        },
+        {
+          "name": "Add Movie - No Auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has errors', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.errors).to.exist;",
+                  "});",
+                  "",
+                  "pm.test('Error message says authentication required', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.errors[0].message).to.include('Authentication required');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { addMovie(title: \\\"Unauthorized Movie\\\", director: \\\"Test\\\", releaseYear: 2024, genres: \\\"Drama\\\") { id title } }\"}"
+            },
+            "url": {
+              "raw": "http://localhost:4000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000"
+            }
+          }
+        },
+        {
+          "name": "Update Movie - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has updated movie', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.updateMovie).to.exist;",
+                  "    pm.expect(jsonData.data.updateMovie.title).to.equal('Updated Test Movie');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { updateMovie(id: {{movie_id}}, title: \\\"Updated Test Movie\\\", rating: 9.0) { id title rating } }\"}"
+            },
+            "url": {
+              "raw": "http://localhost:4000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000"
+            }
+          }
+        },
+        {
+          "name": "Delete Movie - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Delete returns true', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.deleteMovie).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { deleteMovie(id: {{movie_id}}) }\"}"
+            },
+            "url": {
+              "raw": "http://localhost:4000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000"
+            }
+          }
+        },
+        {
+          "name": "Search Movies",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has search results', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.searchMovies).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"query { searchMovies(title: \\\"Test\\\") { id title director } }\"}"
             },
             "url": {
               "raw": "http://localhost:4000",
