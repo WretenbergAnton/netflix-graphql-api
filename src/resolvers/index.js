@@ -122,7 +122,7 @@ const resolvers = {
 
     // Movie Mutations
     addMovie: async (_, { title, director, releaseYear, genres, rating, description }, context) => {
-      // Verify authentication
+      // Verify authentication and get userId
       const userId = getAuthenticatedUserId(context.authorization);
 
       if (!title) {
@@ -137,6 +137,7 @@ const resolvers = {
           genres: genres || null,
           rating: rating || null,
           description: description || null,
+          createdBy: userId,
         },
       });
 
@@ -153,7 +154,7 @@ const resolvers = {
     },
 
     updateMovie: async (_, { id, title, director, releaseYear, genres, rating, description }, context) => {
-      // Verify authentication
+      // Verify authentication and get userId
       const userId = getAuthenticatedUserId(context.authorization);
 
       const movie = await prisma.movie.findUnique({
@@ -162,6 +163,11 @@ const resolvers = {
 
       if (!movie) {
         throw new Error('Movie not found');
+      }
+
+      // Verify user owns this movie
+      if (movie.createdBy !== userId) {
+        throw new Error('You can only update your own movies');
       }
 
       const updatedMovie = await prisma.movie.update({
@@ -189,7 +195,7 @@ const resolvers = {
     },
 
     deleteMovie: async (_, { id }, context) => {
-      // Verify authentication
+      // Verify authentication and get userId
       const userId = getAuthenticatedUserId(context.authorization);
 
       const movie = await prisma.movie.findUnique({
@@ -198,6 +204,11 @@ const resolvers = {
 
       if (!movie) {
         throw new Error('Movie not found');
+      }
+
+      // Verify user owns this movie
+      if (movie.createdBy !== userId) {
+        throw new Error('You can only delete your own movies');
       }
 
       await prisma.movie.delete({
