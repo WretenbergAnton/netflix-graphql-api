@@ -20,12 +20,22 @@ model User {
 
 model Movie {
   id            Int     @id @default(autoincrement())
+  showId        String  @unique @map("show_id")
   title         String
   director      String?
+  cast          String?
+  country       String?
+  dateAdded     String? @map("date_added")
   releaseYear   Int?    @map("release_year")
   genres        String?
-  rating        Float?
+  language      String?
   description   String?
+  rating        Float?
+  popularity    Float?
+  voteCount     Int?    @map("vote_count")
+  voteAverage   Float?  @map("vote_average")
+  budget        Float?
+  revenue       Float?
   createdBy     Int     @map("created_by")
   user          User    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now()) @map("created_at")
