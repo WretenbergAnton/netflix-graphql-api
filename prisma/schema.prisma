@@ -33,8 +33,6 @@ model Movie {
   dateAdded     String? @map("date_added")
   createdBy     Int     @map("created_by")
   user          User    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
-  
-  # Relations
   actors        Actor[]
   genres        Genre[]
   ratings       Rating[]
