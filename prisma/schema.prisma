@@ -22,13 +22,7 @@ model Movie {
   id            Int     @id @default(autoincrement())
   showId        String  @unique @default(uuid()) @map("show_id")
   title         String
-  director      String?
-  cast          String?
-  country       String?
-  dateAdded     String? @map("date_added")
   releaseYear   Int?    @map("release_year")
-  genres        String?
-  language      String?
   description   String?
   rating        Float?
   popularity    Float?
@@ -36,10 +30,51 @@ model Movie {
   voteAverage   Float?  @map("vote_average")
   budget        Float?
   revenue       Float?
+  dateAdded     String? @map("date_added")
   createdBy     Int     @map("created_by")
   user          User    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  
+  # Relations
+  actors        Actor[]
+  genres        Genre[]
+  ratings       Rating[]
   createdAt     DateTime @default(now()) @map("created_at")
 
   @@map("movies")
   @@index([createdBy])
+}
+
+model Actor {
+  id        Int     @id @default(autoincrement())
+  name      String
+  character String?
+  movie     Movie   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieId   Int     @map("movie_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("actors")
+  @@index([movieId])
+}
+
+model Genre {
+  id        Int     @id @default(autoincrement())
+  name      String
+  movie     Movie   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieId   Int     @map("movie_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("genres")
+  @@index([movieId])
+}
+
+model Rating {
+  id        Int     @id @default(autoincrement())
+  value     Int
+  comment   String?
+  movie     Movie   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieId   Int     @map("movie_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("ratings")
+  @@index([movieId])
 }
