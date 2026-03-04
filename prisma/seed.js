@@ -11,10 +11,10 @@ async function hashPassword(password) {
 }
 
 async function main() {
-  console.log('🎬 Starting Netflix data import...\n');
+  console.log('Starting Netflix data import...\n');
 
   // Step 1: Create or find admin user
-  console.log('👤 Creating admin user...');
+  console.log('Creating admin user...');
   let adminUser = await prisma.user.findUnique({
     where: { email: 'admin@netflix.com' },
   });
@@ -28,13 +28,13 @@ async function main() {
         name: 'Netflix Admin',
       },
     });
-    console.log(`✅ Created admin user: ${adminUser.email}\n`);
+    console.log(`Created admin user: ${adminUser.email}\n`);
   } else {
-    console.log(`✅ Admin user already exists\n`);
+    console.log(`Admin user already exists\n`);
   }
 
   // Step 2: Import Movies
-  console.log('🎥 Importing movies...');
+  console.log('Importing movies...');
   const movieFileContent = fs.readFileSync('./prisma/data/netflix_movies_detailed_up_to_2025.csv', 'utf-8');
   
   const movieRecords = parse(movieFileContent, {
@@ -76,7 +76,7 @@ async function main() {
         movieCount += batch.length;
 
         if (movieCount % 1000 === 0) {
-          console.log(`✅ Imported ${movieCount} movies...`);
+          console.log(`Imported ${movieCount} movies...`);
         }
       } catch (error) {
         console.error('Error importing movies:', error.message);
@@ -98,8 +98,8 @@ async function main() {
     }
   }
 
-  console.log(`✅ Imported ${movieCount} movies total\n`);
-  console.log(`🎉 Netflix data import complete!`);
+  console.log(`Imported ${movieCount} movies total\n`);
+  console.log(`Netflix data import complete!`);
   console.log(`\nAdmin credentials:`);
   console.log(`Email: admin@netflix.com`);
   console.log(`Password: admin123`);
