@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Netflix GraphQL API",
-    "description": "Test collection for Netflix GraphQL API with authentication and movies",
+    "description": "Test collection for Netflix GraphQL API with normalized database",
     "version": "1.0.0"
   },
   "item": [
@@ -18,18 +18,15 @@
                   "pm.test('Status code is 200', function() {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "",
                   "pm.test('Response has data field', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data).to.exist;",
                   "});",
-                  "",
                   "pm.test('Response has token', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data.registerUser.token).to.exist;",
                   "    pm.environment.set('auth_token', jsonData.data.registerUser.token);",
                   "});",
-                  "",
                   "pm.test('User email matches input', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data.registerUser.user.email).to.equal(pm.environment.get('test_email'));",
@@ -78,13 +75,11 @@
                   "pm.test('Status code is 200', function() {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "",
                   "pm.test('Response has errors field', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.errors).to.exist;",
                   "    pm.expect(jsonData.errors.length).to.be.greaterThan(0);",
                   "});",
-                  "",
                   "pm.test('Error message contains email already exists', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.errors[0].message).to.include('already exists');",
@@ -123,13 +118,11 @@
                   "pm.test('Status code is 200', function() {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "",
                   "pm.test('Response has token', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data.loginUser.token).to.exist;",
                   "    pm.environment.set('auth_token', jsonData.data.loginUser.token);",
                   "});",
-                  "",
                   "pm.test('User email matches', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data.loginUser.user.email).to.equal(pm.environment.get('duplicate_test_email'));",
@@ -168,12 +161,10 @@
                   "pm.test('Status code is 200', function() {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "",
                   "pm.test('Response has errors', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.errors).to.exist;",
                   "});",
-                  "",
                   "pm.test('Error message is invalid credentials', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.errors[0].message).to.include('Invalid');",
@@ -217,12 +208,10 @@
                   "pm.test('Status code is 200', function() {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "",
                   "pm.test('Response has data field', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data).to.exist;",
                   "});",
-                  "",
                   "pm.test('Movies array exists', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data.movies).to.be.an('array');",
@@ -241,7 +230,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"query\":\"query { movies(limit: 5) { id title director rating } }\"}"
+              "raw": "{\"query\":\"query { movies(limit: 5) { id title rating actors { name } genres { name } } }\"}"
             },
             "url": {
               "raw": "http://localhost:4000",
@@ -261,14 +250,12 @@
                   "pm.test('Status code is 200', function() {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "",
                   "pm.test('Response has movie data', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data.addMovie).to.exist;",
                   "    pm.expect(jsonData.data.addMovie.id).to.be.greaterThan(0);",
                   "    pm.environment.set('movie_id', jsonData.data.addMovie.id);",
                   "});",
-                  "",
                   "pm.test('Movie title matches input', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data.addMovie.title).to.equal('Test Movie');",
@@ -291,7 +278,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"query\":\"mutation { addMovie(title: \\\"Test Movie\\\", director: \\\"Test Director\\\", releaseYear: 2024, genres: \\\"Action\\\", rating: 8.5, description: \\\"A test movie\\\") { id title director rating createdAt } }\"}"
+              "raw": "{\"query\":\"mutation { addMovie(title: \\\"Test Movie\\\", releaseYear: 2024, description: \\\"A test movie\\\", rating: 8.5) { id title rating createdAt } }\"}"
             },
             "url": {
               "raw": "http://localhost:4000",
@@ -311,12 +298,10 @@
                   "pm.test('Status code is 200', function() {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "",
                   "pm.test('Response has errors', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.errors).to.exist;",
                   "});",
-                  "",
                   "pm.test('Error message says authentication required', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.errors[0].message).to.include('Authentication required');",
@@ -335,7 +320,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"query\":\"mutation { addMovie(title: \\\"Unauthorized Movie\\\", director: \\\"Test\\\", releaseYear: 2024, genres: \\\"Drama\\\") { id title } }\"}"
+              "raw": "{\"query\":\"mutation { addMovie(title: \\\"Unauthorized Movie\\\", releaseYear: 2024, description: \\\"Test\\\") { id title } }\"}"
             },
             "url": {
               "raw": "http://localhost:4000",
@@ -355,7 +340,6 @@
                   "pm.test('Status code is 200', function() {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "",
                   "pm.test('Response has updated movie', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data.updateMovie).to.exist;",
@@ -399,7 +383,6 @@
                   "pm.test('Status code is 200', function() {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "",
                   "pm.test('Delete returns true', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data.deleteMovie).to.be.true;",
@@ -442,7 +425,6 @@
                   "pm.test('Status code is 200', function() {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "",
                   "pm.test('Response has search results', function() {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data.searchMovies).to.be.an('array');",
@@ -461,7 +443,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"query\":\"query { searchMovies(title: \\\"Test\\\") { id title director } }\"}"
+              "raw": "{\"query\":\"query { searchMovies(title: \\\"Matrix\\\") { id title rating actors { name } genres { name } } }\"}"
             },
             "url": {
               "raw": "http://localhost:4000",
