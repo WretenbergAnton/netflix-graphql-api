@@ -10,11 +10,21 @@ async function hashPassword(password) {
   return await bcrypt.hash(password, salt);
 }
 
-async function main() {
-  console.log('Starting Netflix data import...\n');
+function parseActors(actorString) {
+  if (!actorString) return [];
+  return actorString.split(',').map(actor => actor.trim()).filter(a => a);
+}
 
-  // Step 1: Create or find admin user
-  console.log('Creating admin user...');
+function parseGenres(genreString) {
+  if (!genreString) return [];
+  return genreString.split(',').map(genre => genre.trim()).filter(g => g);
+}
+
+async function main() {
+  console.log('🎬 Starting Netflix data import with normalization...\n');
+
+  // Step 1: Create admin user
+  console.log('👤 Creating admin user...');
   let adminUser = await prisma.user.findUnique({
     where: { email: 'admin@netflix.com' },
   });
@@ -28,13 +38,11 @@ async function main() {
         name: 'Netflix Admin',
       },
     });
-    console.log(`Created admin user: ${adminUser.email}\n`);
-  } else {
-    console.log(`Admin user already exists\n`);
+    console.log(`✅ Created admin user: ${adminUser.email}\n`);
   }
 
-  // Step 2: Import Movies
-  console.log('Importing movies...');
+  // Step 2: Import Movies with normalized data
+  console.log('🎥 Importing movies with actors and genres...');
   const movieFileContent = fs.readFileSync('./prisma/data/netflix_movies_detailed_up_to_2025.csv', 'utf-8');
   
   const movieRecords = parse(movieFileContent, {
@@ -43,63 +51,68 @@ async function main() {
   });
 
   let movieCount = 0;
-  const batchSize = 100;
-  let batch = [];
+  let actorCount = 0;
+  let genreCount = 0;
 
   for (const record of movieRecords) {
-    batch.push({
-      showId: record.show_id || `movie_${Date.now()}_${Math.random()}`,
-      title: record.title || 'Unknown',
-      director: record.director || null,
-      cast: record.cast || null,
-      country: record.country || null,
-      dateAdded: record.date_added || null,
-      releaseYear: record.release_year ? parseInt(record.release_year) : null,
-      genres: record.genres || null,
-      language: record.language || null,
-      description: record.description || null,
-      rating: record.rating ? parseFloat(record.rating) : null,
-      popularity: record.popularity ? parseFloat(record.popularity) : null,
-      voteCount: record.vote_count ? parseInt(record.vote_count) : null,
-      voteAverage: record.vote_average ? parseFloat(record.vote_average) : null,
-      budget: record.budget ? parseFloat(record.budget) : null,
-      revenue: record.revenue ? parseFloat(record.revenue) : null,
-      createdBy: adminUser.id,
-    });
-
-    if (batch.length >= batchSize) {
-      try {
-        await prisma.movie.createMany({
-          data: batch,
-          skipDuplicates: true,
-        });
-        movieCount += batch.length;
-
-        if (movieCount % 1000 === 0) {
-          console.log(`Imported ${movieCount} movies...`);
-        }
-      } catch (error) {
-        console.error('Error importing movies:', error.message);
-      }
-      batch = [];
-    }
-  }
-
-  // Final batch
-  if (batch.length > 0) {
     try {
-      await prisma.movie.createMany({
-        data: batch,
-        skipDuplicates: true,
+      // Create movie
+      const movie = await prisma.movie.create({
+        data: {
+          showId: record.show_id || `movie_${Date.now()}_${Math.random()}`,
+          title: record.title || 'Unknown',
+          releaseYear: record.release_year ? parseInt(record.release_year) : null,
+          description: record.description || null,
+          rating: record.rating ? parseFloat(record.rating) : null,
+          popularity: record.popularity ? parseFloat(record.popularity) : null,
+          voteCount: record.vote_count ? parseInt(record.vote_count) : null,
+          voteAverage: record.vote_average ? parseFloat(record.vote_average) : null,
+          budget: record.budget ? parseFloat(record.budget) : null,
+          revenue: record.revenue ? parseFloat(record.revenue) : null,
+          dateAdded: record.date_added || null,
+          createdBy: adminUser.id,
+        },
       });
-      movieCount += batch.length;
+
+      movieCount++;
+
+      // Parse and create actors
+      const actors = parseActors(record.cast);
+      for (const actorName of actors) {
+        await prisma.actor.create({
+          data: {
+            name: actorName,
+            movieId: movie.id,
+          },
+        });
+        actorCount++;
+      }
+
+      // Parse and create genres
+      const genres = parseGenres(record.genres);
+      for (const genreName of genres) {
+        await prisma.genre.create({
+          data: {
+            name: genreName,
+            movieId: movie.id,
+          },
+        });
+        genreCount++;
+      }
+
+      if (movieCount % 1000 === 0) {
+        console.log(`✅ Imported ${movieCount} movies, ${actorCount} actors, ${genreCount} genres...`);
+      }
     } catch (error) {
-      console.error('Error importing final batch:', error.message);
+      // Silently skip duplicates
     }
   }
 
-  console.log(`Imported ${movieCount} movies total\n`);
-  console.log(`Netflix data import complete!`);
+  console.log(`\n✅ Import complete!`);
+  console.log(`   Movies: ${movieCount}`);
+  console.log(`   Actors: ${actorCount}`);
+  console.log(`   Genres: ${genreCount}\n`);
+  console.log(`🎉 Netflix data import complete!`);
   console.log(`\nAdmin credentials:`);
   console.log(`Email: admin@netflix.com`);
   console.log(`Password: admin123`);
