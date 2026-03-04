@@ -22,18 +22,25 @@ const resolvers = {
   Query: {
     hello: () => 'Hello from Netflix GraphQL API!',
 
-    // Movie Queries
     movies: async (_, { limit = 10, offset = 0 }) => {
       return await prisma.movie.findMany({
         take: limit,
         skip: offset,
         orderBy: { rating: 'desc' },
+        include: {
+          actors: true,
+          genres: true,
+        },
       });
     },
 
     movie: async (_, { id }) => {
       return await prisma.movie.findUnique({
         where: { id },
+        include: {
+          actors: true,
+          genres: true,
+        },
       });
     },
 
@@ -46,12 +53,15 @@ const resolvers = {
           },
         },
         take: 20,
+        include: {
+          actors: true,
+          genres: true,
+        },
       });
     },
   },
 
   Mutation: {
-    // User Mutations
     registerUser: async (_, { email, password, name }) => {
       if (!email || !password) {
         throw new Error('Email and password are required');
@@ -120,9 +130,7 @@ const resolvers = {
       };
     },
 
-    // Movie Mutations
-    addMovie: async (_, { title, director, releaseYear, genres, rating, description }, context) => {
-      // Verify authentication and get userId
+    addMovie: async (_, { title, releaseYear, description, rating }, context) => {
       const userId = getAuthenticatedUserId(context.authorization);
 
       if (!title) {
@@ -132,29 +140,30 @@ const resolvers = {
       const movie = await prisma.movie.create({
         data: {
           title,
-          director: director || null,
           releaseYear: releaseYear || null,
-          genres: genres || null,
-          rating: rating || null,
           description: description || null,
+          rating: rating || null,
           createdBy: userId,
+        },
+        include: {
+          actors: true,
+          genres: true,
         },
       });
 
       return {
         id: movie.id,
         title: movie.title,
-        director: movie.director,
         releaseYear: movie.releaseYear,
-        genres: movie.genres,
-        rating: movie.rating,
         description: movie.description,
+        rating: movie.rating,
+        actors: movie.actors,
+        genres: movie.genres,
         createdAt: movie.createdAt.toISOString(),
       };
     },
 
-    updateMovie: async (_, { id, title, director, releaseYear, genres, rating, description }, context) => {
-      // Verify authentication and get userId
+    updateMovie: async (_, { id, title, releaseYear, description, rating }, context) => {
       const userId = getAuthenticatedUserId(context.authorization);
 
       const movie = await prisma.movie.findUnique({
@@ -165,7 +174,6 @@ const resolvers = {
         throw new Error('Movie not found');
       }
 
-      // Verify user owns this movie
       if (movie.createdBy !== userId) {
         throw new Error('You can only update your own movies');
       }
@@ -174,28 +182,29 @@ const resolvers = {
         where: { id },
         data: {
           title: title || movie.title,
-          director: director || movie.director,
           releaseYear: releaseYear || movie.releaseYear,
-          genres: genres || movie.genres,
-          rating: rating || movie.rating,
           description: description || movie.description,
+          rating: rating || movie.rating,
+        },
+        include: {
+          actors: true,
+          genres: true,
         },
       });
 
       return {
         id: updatedMovie.id,
         title: updatedMovie.title,
-        director: updatedMovie.director,
         releaseYear: updatedMovie.releaseYear,
-        genres: updatedMovie.genres,
-        rating: updatedMovie.rating,
         description: updatedMovie.description,
+        rating: updatedMovie.rating,
+        actors: updatedMovie.actors,
+        genres: updatedMovie.genres,
         createdAt: updatedMovie.createdAt.toISOString(),
       };
     },
 
     deleteMovie: async (_, { id }, context) => {
-      // Verify authentication and get userId
       const userId = getAuthenticatedUserId(context.authorization);
 
       const movie = await prisma.movie.findUnique({
@@ -206,7 +215,6 @@ const resolvers = {
         throw new Error('Movie not found');
       }
 
-      // Verify user owns this movie
       if (movie.createdBy !== userId) {
         throw new Error('You can only delete your own movies');
       }
