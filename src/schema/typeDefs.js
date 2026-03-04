@@ -10,8 +10,8 @@ const typeDefs = `
     registerUser(email: String!, password: String!, name: String): AuthPayload!
     loginUser(email: String!, password: String!): AuthPayload!
     
-    addMovie(title: String!, director: String, releaseYear: Int, genres: String, rating: Float, description: String): Movie!
-    updateMovie(id: Int!, title: String, director: String, releaseYear: Int, genres: String, rating: Float, description: String): Movie
+    addMovie(title: String!, releaseYear: Int, description: String, rating: Float): Movie!
+    updateMovie(id: Int!, title: String, releaseYear: Int, description: String, rating: Float): Movie
     deleteMovie(id: Int!): Boolean!
   }
 
@@ -30,12 +30,25 @@ const typeDefs = `
   type Movie {
     id: Int!
     title: String!
-    director: String
     releaseYear: Int
-    genres: String
-    rating: Float
     description: String
+    rating: Float
+    popularity: Float
+    voteAverage: Float
     createdAt: String!
+    actors: [Actor!]!
+    genres: [Genre!]!
+  }
+
+  type Actor {
+    id: Int!
+    name: String!
+    character: String
+  }
+
+  type Genre {
+    id: Int!
+    name: String!
   }
 `;
 
