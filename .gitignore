@@ -1,19 +1,28 @@
-node_modules/
+# Environment variables
 .env
 .env.local
-.DS_Store
-*.log
-npm-debug.log
-dist/
-build/
-.vscode/
-.idea/
-*.pem
+.env.*.local
+
+# Prisma
 .prisma/
 
-# Test results
-newman/
-.newman/
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+.yarn-integrity
 
-# GitHub
-.github/secrets
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

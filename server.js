@@ -1,8 +1,24 @@
+const express = require('express');
 const { ApolloServer } = require('@apollo/server');
-const { startStandaloneServer } = require('@apollo/server/standalone');
+const { expressMiddleware } = require('@apollo/server/express4');
 const typeDefs = require('./src/schema/typeDefs');
-const resolvers = require('./src/resolvers');
+const movieResolvers = require('./src/resolvers/movieResolvers');
+const userResolvers = require('./src/resolvers/userResolvers');
 require('dotenv').config();
+
+const app = express();
+
+// Kombinera resolvers
+const resolvers = {
+  Query: {
+    ...movieResolvers.Query,
+    ...userResolvers.Query,
+  },
+  Mutation: {
+    ...userResolvers.Mutation,
+    ...movieResolvers.Mutation,
+  },
+};
 
 const server = new ApolloServer({
   typeDefs,
@@ -16,13 +32,30 @@ const server = new ApolloServer({
   },
 });
 
-startStandaloneServer(server, {
-  listen: { port: process.env.PORT || 4000 },
-  context: async ({ req }) => {
-    return {
-      authorization: req.headers.authorization || null,
-    };
-  },
-}).then(({ url }) => {
-  console.log(`Server ready at ${url}`);
+async function startServer() {
+  await server.start();
+
+  app.use(express.json());
+
+  app.use(
+    '/graphql',
+    expressMiddleware(server, {
+      context: async ({ req }) => {
+        return {
+          authorization: req.headers.authorization || null,
+        };
+      },
+    })
+  );
+
+  const PORT = process.env.PORT || 4000;
+  
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`GraphQL Server is running at http://0.0.0.0:${PORT}/graphql`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error('Failed to start server:', error);
+  process.exit(1);
 });
