@@ -9,7 +9,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "seed": "node seed.js",
+    "seed": "node prisma/seed.js",
     "test": "newman run netflix-api.postman_collection.json --environment netflix-api.postman_environment.json --reporters cli,json"
   },
   "dependencies": {

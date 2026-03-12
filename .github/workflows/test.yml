@@ -45,12 +45,18 @@ jobs:
         DATABASE_URL: postgresql://admin:password@localhost:5432/myapi_db
 
     - name: Start API server
-      run: npm run dev &
+      run: npm start &
       env:
         DATABASE_URL: postgresql://admin:password@localhost:5432/myapi_db
+        PORT: 4000
+        JWT_SECRET: test-secret-key-for-ci
+        NODE_ENV: test
 
     - name: Wait for API to be ready
-      run: sleep 5
+      run: sleep 10
+
+    - name: Check if server is responding
+      run: curl -f http://localhost:4000/graphql || exit 1
 
     - name: Run Postman tests
       run: npm test
