@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Netflix GraphQL API",
-    "description": "GraphQL API for Netflix movies and authentication",
+    "description": "Complete test collection for Netflix GraphQL API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -9,7 +9,7 @@
       "name": "Authentication",
       "item": [
         {
-          "name": "Register User",
+          "name": "Register User - Success",
           "request": {
             "method": "POST",
             "url": "{{BASE_URL}}",
@@ -22,13 +22,42 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n  registerUser(\n    email: \"user@example.com\"\n    password: \"password123\"\n    name: \"John Doe\"\n  ) {\n    token\n    user {\n      id\n      email\n      name\n    }\n  }\n}"
+                "query": "mutation {\n  registerUser(\n    email: \"test{{$timestamp}}@example.com\"\n    password: \"password123\"\n    name: \"Test User\"\n  ) {\n    token\n    user {\n      id\n      email\n      name\n    }\n  }\n}"
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has data field\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "});",
+                  "",
+                  "pm.test(\"Response has token\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.data.registerUser).to.have.property('token');",
+                  "  pm.environment.set('auth_token', jsonData.data.registerUser.token);",
+                  "});",
+                  "",
+                  "pm.test(\"User email matches input\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.data.registerUser.user.email).to.include('@example.com');",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "Login User",
+          "name": "Register User - Duplicate Email",
           "request": {
             "method": "POST",
             "url": "{{BASE_URL}}",
@@ -41,10 +70,110 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n  loginUser(\n    email: \"user@example.com\"\n    password: \"password123\"\n  ) {\n    token\n    user {\n      id\n      email\n      name\n    }\n  }\n}"
+                "query": "mutation {\n  registerUser(\n    email: \"admin@netflix.com\"\n    password: \"password123\"\n    name: \"Duplicate\"\n  ) {\n    token\n    user {\n      id\n      email\n      name\n    }\n  }\n}"
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Response has errors field\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('errors');",
+                  "});",
+                  "",
+                  "pm.test(\"Error message contains email already exists\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.errors[0].message).to.include('already exists');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login User - Success",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  loginUser(\n    email: \"admin@netflix.com\"\n    password: \"admin123\"\n  ) {\n    token\n    user {\n      id\n      email\n      name\n    }\n  }\n}"
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has token\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.data.loginUser).to.have.property('token');",
+                  "  pm.environment.set('auth_token', jsonData.data.loginUser.token);",
+                  "});",
+                  "",
+                  "pm.test(\"User email matches\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.data.loginUser.user.email).to.equal('admin@netflix.com');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login User - Invalid Password",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  loginUser(\n    email: \"admin@netflix.com\"\n    password: \"wrongpassword\"\n  ) {\n    token\n    user {\n      id\n      email\n    }\n  }\n}"
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Response has errors\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('errors');",
+                  "});",
+                  "",
+                  "pm.test(\"Error message is invalid credentials\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.errors[0].message).to.include('Invalid');",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -65,10 +194,34 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "{\n  movies(limit: 10, offset: 0) {\n    id\n    title\n    description\n    releaseYear\n    rating\n    actors {\n      name\n      character\n    }\n    genres {\n      name\n    }\n  }\n}"
+                "query": "{\n  movies(limit: 5, offset: 0) {\n    id\n    title\n    description\n    releaseYear\n    rating\n    actors {\n      name\n    }\n    genres {\n      name\n    }\n  }\n}"
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has data field\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "});",
+                  "",
+                  "pm.test(\"Movies array exists\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.data).to.have.property('movies');",
+                  "  pm.expect(jsonData.data.movies).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get Single Movie",
@@ -84,10 +237,28 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "{\n  movie(id: 1) {\n    id\n    title\n    description\n    releaseYear\n    rating\n    actors {\n      name\n      character\n    }\n  }\n}"
+                "query": "{\n  movie(id: 1) {\n    id\n    title\n    description\n    releaseYear\n    rating\n  }\n}"
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has movie data\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.data.movie).to.have.property('title');",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Search Movies",
@@ -103,13 +274,32 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "{\n  searchMovies(title: \"avengers\") {\n    id\n    title\n    releaseYear\n    rating\n  }\n}"
+                "query": "{\n  searchMovies(title: \"shrek\") {\n    id\n    title\n    releaseYear\n    rating\n  }\n}"
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has search results\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.data).to.have.property('searchMovies');",
+                  "  pm.expect(jsonData.data.searchMovies).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "Add Movie",
+          "name": "Add Movie - Success",
           "request": {
             "method": "POST",
             "url": "{{BASE_URL}}",
@@ -126,13 +316,75 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n  addMovie(\n    title: \"My Movie\"\n    releaseYear: 2024\n    description: \"An amazing film\"\n    rating: 8.5\n  ) {\n    id\n    title\n    releaseYear\n    rating\n  }\n}"
+                "query": "mutation {\n  addMovie(\n    title: \"Test Movie {{$timestamp}}\"\n    releaseYear: 2024\n    description: \"Test description\"\n    rating: 8.5\n  ) {\n    id\n    title\n    releaseYear\n    rating\n  }\n}"
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has movie data\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.data.addMovie).to.have.property('id');",
+                  "  pm.environment.set('movie_id', jsonData.data.addMovie.id);",
+                  "});",
+                  "",
+                  "pm.test(\"Movie title matches input\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.data.addMovie.title).to.include('Test Movie');",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "Update Movie",
+          "name": "Add Movie - No Auth",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  addMovie(\n    title: \"Unauthorized\"\n    releaseYear: 2024\n    description: \"Should fail\"\n    rating: 5.0\n  ) {\n    id\n    title\n  }\n}"
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Response has errors\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('errors');",
+                  "});",
+                  "",
+                  "pm.test(\"Error message says authentication required\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.errors[0].message).to.include('Authentication');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Movie - Success",
           "request": {
             "method": "POST",
             "url": "{{BASE_URL}}",
@@ -152,10 +404,28 @@
                 "query": "mutation {\n  updateMovie(\n    id: 1\n    title: \"Updated Title\"\n    releaseYear: 2025\n    rating: 9.0\n  ) {\n    id\n    title\n    releaseYear\n    rating\n  }\n}"
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has updated movie\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.data).to.have.property('updateMovie');",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "Delete Movie",
+          "name": "Delete Movie - Success",
           "request": {
             "method": "POST",
             "url": "{{BASE_URL}}",
@@ -175,7 +445,25 @@
                 "query": "mutation {\n  deleteMovie(id: 1)\n}"
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Delete returns true\", function() {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.data.deleteMovie).to.equal(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     }
@@ -187,6 +475,10 @@
     },
     {
       "key": "auth_token",
+      "value": ""
+    },
+    {
+      "key": "movie_id",
       "value": ""
     }
   ]
