@@ -4,6 +4,8 @@ const typeDefs = `
     movies(limit: Int, offset: Int): MovieConnection!
     movie(id: Int!): Movie
     searchMovies(title: String!): [Movie!]!
+    actors: [Actor!]!
+    ratings(movieId: Int!): [Rating!]!
   }
 
   type Mutation {
@@ -56,6 +58,14 @@ const typeDefs = `
   type Genre {
     id: Int!
     name: String!
+  }
+
+  type Rating {
+    id: Int!
+    movieId: Int!
+    score: Float!
+    comment: String
+    createdAt: String!
   }
 `;
 

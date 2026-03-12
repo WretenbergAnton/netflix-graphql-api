@@ -1,18 +1,20 @@
-const { PrismaClient } = require('@prisma/client');
-const { verifyToken } = require('../utils/auth');
+const { PrismaClient } = require("@prisma/client");
+const { verifyToken } = require("../utils/auth");
 
 const prisma = new PrismaClient();
 
 const getAuthenticatedUserId = (authorization) => {
   if (!authorization) {
-    throw new Error('Authentication required. Please provide a valid JWT token.');
+    throw new Error(
+      "Authentication required. Please provide a valid JWT token.",
+    );
   }
 
-  const token = authorization.replace('Bearer ', '');
+  const token = authorization.replace("Bearer ", "");
   const decoded = verifyToken(token);
-  
+
   if (!decoded) {
-    throw new Error('Invalid or expired token');
+    throw new Error("Invalid or expired token");
   }
 
   return decoded.userId;
@@ -26,7 +28,7 @@ const movieResolvers = {
         prisma.movie.findMany({
           take: limit,
           skip: offset,
-          orderBy: { rating: 'desc' },
+          orderBy: { rating: "desc" },
           include: {
             actors: true,
             genres: true,
@@ -61,7 +63,7 @@ const movieResolvers = {
         where: {
           title: {
             contains: title,
-            mode: 'insensitive',
+            mode: "insensitive",
           },
         },
         take: 20,
@@ -71,15 +73,34 @@ const movieResolvers = {
         },
       });
     },
+
+    actors: async () => {
+      return await prisma.actor.findMany({
+        include: {
+          movies: true,
+        },
+      });
+    },
+
+    ratings: async (_, { movieId }) => {
+      return await prisma.rating.findMany({
+        where: { movieId },
+        orderBy: { createdAt: "desc" },
+      });
+    },
   },
 
   // Mutations
   Mutation: {
-    addMovie: async (_, { title, releaseYear, description, rating }, context) => {
+    addMovie: async (
+      _,
+      { title, releaseYear, description, rating },
+      context,
+    ) => {
       const userId = getAuthenticatedUserId(context.authorization);
 
       if (!title) {
-        throw new Error('Title is required');
+        throw new Error("Title is required");
       }
 
       const movie = await prisma.movie.create({
@@ -108,7 +129,11 @@ const movieResolvers = {
       };
     },
 
-    updateMovie: async (_, { id, title, releaseYear, description, rating }, context) => {
+    updateMovie: async (
+      _,
+      { id, title, releaseYear, description, rating },
+      context,
+    ) => {
       const userId = getAuthenticatedUserId(context.authorization);
 
       const movie = await prisma.movie.findUnique({
@@ -116,11 +141,11 @@ const movieResolvers = {
       });
 
       if (!movie) {
-        throw new Error('Movie not found');
+        throw new Error("Movie not found");
       }
 
       if (movie.createdBy !== userId) {
-        throw new Error('You can only update your own movies');
+        throw new Error("You can only update your own movies");
       }
 
       const updatedMovie = await prisma.movie.update({
@@ -157,11 +182,11 @@ const movieResolvers = {
       });
 
       if (!movie) {
-        throw new Error('Movie not found');
+        throw new Error("Movie not found");
       }
 
       if (movie.createdBy !== userId) {
-        throw new Error('You can only delete your own movies');
+        throw new Error("You can only delete your own movies");
       }
 
       await prisma.movie.delete({
