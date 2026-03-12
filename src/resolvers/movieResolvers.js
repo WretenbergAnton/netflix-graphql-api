@@ -20,7 +20,7 @@ const getAuthenticatedUserId = (authorization) => {
 
 const movieResolvers = {
   // Queries
-  movieQueries: {
+  Query: {
     movies: async (_, { limit = 10, offset = 0 }) => {
       return await prisma.movie.findMany({
         take: limit,
@@ -61,7 +61,7 @@ const movieResolvers = {
   },
 
   // Mutations
-  movieMutations: {
+  Mutation: {
     addMovie: async (_, { title, releaseYear, description, rating }, context) => {
       const userId = getAuthenticatedUserId(context.authorization);
 
