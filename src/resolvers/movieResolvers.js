@@ -22,15 +22,28 @@ const movieResolvers = {
   // Queries
   Query: {
     movies: async (_, { limit = 10, offset = 0 }) => {
-      return await prisma.movie.findMany({
-        take: limit,
-        skip: offset,
-        orderBy: { rating: 'desc' },
-        include: {
-          actors: true,
-          genres: true,
-        },
-      });
+      const [movies, totalCount] = await Promise.all([
+        prisma.movie.findMany({
+          take: limit,
+          skip: offset,
+          orderBy: { rating: 'desc' },
+          include: {
+            actors: true,
+            genres: true,
+          },
+        }),
+        prisma.movie.count(),
+      ]);
+
+      const totalPages = Math.ceil(totalCount / limit);
+      const hasNextPage = offset + limit < totalCount;
+
+      return {
+        movies,
+        totalCount,
+        hasNextPage,
+        totalPages,
+      };
     },
 
     movie: async (_, { id }) => {

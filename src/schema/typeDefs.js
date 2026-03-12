@@ -1,7 +1,7 @@
 const typeDefs = `
   type Query {
     hello: String
-    movies(limit: Int, offset: Int): [Movie!]!
+    movies(limit: Int, offset: Int): MovieConnection!
     movie(id: Int!): Movie
     searchMovies(title: String!): [Movie!]!
   }
@@ -13,6 +13,13 @@ const typeDefs = `
     addMovie(title: String!, releaseYear: Int, description: String, rating: Float): Movie!
     updateMovie(id: Int!, title: String, releaseYear: Int, description: String, rating: Float): Movie
     deleteMovie(id: Int!): Boolean!
+  }
+
+  type MovieConnection {
+    movies: [Movie!]!
+    totalCount: Int!
+    hasNextPage: Boolean!
+    totalPages: Int!
   }
 
   type AuthPayload {
