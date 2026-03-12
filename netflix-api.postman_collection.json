@@ -199,7 +199,7 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "{\n  movies(limit: 5, offset: 0) {\n    id\n    title\n    description\n    releaseYear\n    rating\n    actors {\n      name\n    }\n    genres {\n      name\n    }\n  }\n}"
+                "query": "{\n  movies(limit: 5, offset: 0) {\n    movies {\n      id\n      title\n      description\n      releaseYear\n      rating\n      actors {\n        name\n      }\n      genres {\n        name\n      }\n    }\n    totalCount\n    hasNextPage\n    totalPages\n  }\n}"
               }
             }
           },
@@ -220,11 +220,10 @@
                   "",
                   "pm.test(\"Movies array exists\", function() {",
                   "  var jsonData = pm.response.json();",
-                  "  pm.expect(jsonData.data).to.have.property('movies');",
-                  "  pm.expect(jsonData.data.movies).to.be.an('array');",
-                  "  if(jsonData.data.movies.length > 0) {",
-                  "    pm.environment.set('movie_id', jsonData.data.movies[0].id);",
-                  "  }",
+                  "  pm.expect(jsonData.data.movies).to.have.property('movies');",
+                  "  pm.expect(jsonData.data.movies.movies).to.be.an('array');",
+                  "  pm.expect(jsonData.data.movies).to.have.property('totalCount');",
+                  "  pm.expect(jsonData.data.movies).to.have.property('hasNextPage');",
                   "});"
                 ]
               }
