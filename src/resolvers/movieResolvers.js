@@ -77,12 +77,16 @@ const movieResolvers = {
     actors: async () => {
       return await prisma.actor.findMany({
         include: {
-          movies: true,
+          movie: true,  // ← CHANGED: movie (singular)
         },
       });
     },
 
     ratings: async (_, { movieId }) => {
+      if (!movieId) {
+        throw new Error("movieId is required");
+      }
+      
       return await prisma.rating.findMany({
         where: { movieId },
         orderBy: { createdAt: "desc" },
