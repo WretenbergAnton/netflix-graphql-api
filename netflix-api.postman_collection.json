@@ -1,52 +1,18 @@
 {
   "info": {
     "name": "Netflix GraphQL API",
-    "description": "Test collection for Netflix GraphQL API with normalized database",
-    "version": "1.0.0"
+    "description": "GraphQL API for Netflix movies and authentication",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
       "name": "Authentication",
       "item": [
         {
-          "name": "Register User - Success",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Response has data field', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data).to.exist;",
-                  "});",
-                  "pm.test('Response has token', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.registerUser.token).to.exist;",
-                  "    pm.environment.set('auth_token', jsonData.data.registerUser.token);",
-                  "});",
-                  "pm.test('User email matches input', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.registerUser.user.email).to.equal(pm.environment.get('test_email'));",
-                  "    pm.environment.set('duplicate_test_email', pm.environment.get('test_email'));",
-                  "});"
-                ]
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "const randomEmail = 'test_' + Date.now() + '@example.com';",
-                  "pm.environment.set('test_email', randomEmail);"
-                ]
-              }
-            }
-          ],
+          "name": "Register User",
           "request": {
             "method": "POST",
+            "url": "{{BASE_URL}}",
             "header": [
               {
                 "key": "Content-Type",
@@ -54,42 +20,18 @@
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"mutation { registerUser(email: \\\"{{test_email}}\\\", password: \\\"password123\\\", name: \\\"Test User\\\") { token user { id email name createdAt } } }\"}"
-            },
-            "url": {
-              "raw": "http://localhost:4000",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "4000"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  registerUser(\n    email: \"user@example.com\"\n    password: \"password123\"\n    name: \"John Doe\"\n  ) {\n    token\n    user {\n      id\n      email\n      name\n    }\n  }\n}"
+              }
             }
           }
         },
         {
-          "name": "Register User - Duplicate Email",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Response has errors field', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.errors).to.exist;",
-                  "    pm.expect(jsonData.errors.length).to.be.greaterThan(0);",
-                  "});",
-                  "pm.test('Error message contains email already exists', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.errors[0].message).to.include('already exists');",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "Login User",
           "request": {
             "method": "POST",
+            "url": "{{BASE_URL}}",
             "header": [
               {
                 "key": "Content-Type",
@@ -97,99 +39,10 @@
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"mutation { registerUser(email: \\\"{{duplicate_test_email}}\\\", password: \\\"password123\\\", name: \\\"Test User\\\") { token user { id email } } }\"}"
-            },
-            "url": {
-              "raw": "http://localhost:4000",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "4000"
-            }
-          }
-        },
-        {
-          "name": "Login User - Success",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Response has token', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.loginUser.token).to.exist;",
-                  "    pm.environment.set('auth_token', jsonData.data.loginUser.token);",
-                  "});",
-                  "pm.test('User email matches', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.loginUser.user.email).to.equal(pm.environment.get('duplicate_test_email'));",
-                  "});"
-                ]
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  loginUser(\n    email: \"user@example.com\"\n    password: \"password123\"\n  ) {\n    token\n    user {\n      id\n      email\n      name\n    }\n  }\n}"
               }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"mutation { loginUser(email: \\\"{{duplicate_test_email}}\\\", password: \\\"password123\\\") { token user { id email createdAt } } }\"}"
-            },
-            "url": {
-              "raw": "http://localhost:4000",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "4000"
-            }
-          }
-        },
-        {
-          "name": "Login User - Invalid Password",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Response has errors', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.errors).to.exist;",
-                  "});",
-                  "pm.test('Error message is invalid credentials', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.errors[0].message).to.include('Invalid');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"mutation { loginUser(email: \\\"{{duplicate_test_email}}\\\", password: \\\"wrongpassword\\\") { token user { id } } }\"}"
-            },
-            "url": {
-              "raw": "http://localhost:4000",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "4000"
             }
           }
         }
@@ -200,28 +53,9 @@
       "item": [
         {
           "name": "Get All Movies",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Response has data field', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data).to.exist;",
-                  "});",
-                  "pm.test('Movies array exists', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.movies).to.be.an('array');",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
+            "url": "{{BASE_URL}}",
             "header": [
               {
                 "key": "Content-Type",
@@ -229,89 +63,18 @@
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"query { movies(limit: 5) { id title rating actors { name } genres { name } } }\"}"
-            },
-            "url": {
-              "raw": "http://localhost:4000",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "4000"
+              "mode": "graphql",
+              "graphql": {
+                "query": "{\n  movies(limit: 10, offset: 0) {\n    id\n    title\n    description\n    releaseYear\n    rating\n    actors {\n      name\n      character\n    }\n    genres {\n      name\n    }\n  }\n}"
+              }
             }
           }
         },
         {
-          "name": "Add Movie - Success",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Response has movie data', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.addMovie).to.exist;",
-                  "    pm.expect(jsonData.data.addMovie.id).to.be.greaterThan(0);",
-                  "    pm.environment.set('movie_id', jsonData.data.addMovie.id);",
-                  "});",
-                  "pm.test('Movie title matches input', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.addMovie.title).to.equal('Test Movie');",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "Get Single Movie",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"mutation { addMovie(title: \\\"Test Movie\\\", releaseYear: 2024, description: \\\"A test movie\\\", rating: 8.5) { id title rating createdAt } }\"}"
-            },
-            "url": {
-              "raw": "http://localhost:4000",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "4000"
-            }
-          }
-        },
-        {
-          "name": "Add Movie - No Auth",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Response has errors', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.errors).to.exist;",
-                  "});",
-                  "pm.test('Error message says authentication required', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.errors[0].message).to.include('Authentication required');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
+            "url": "{{BASE_URL}}",
             "header": [
               {
                 "key": "Content-Type",
@@ -319,122 +82,18 @@
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"mutation { addMovie(title: \\\"Unauthorized Movie\\\", releaseYear: 2024, description: \\\"Test\\\") { id title } }\"}"
-            },
-            "url": {
-              "raw": "http://localhost:4000",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "4000"
-            }
-          }
-        },
-        {
-          "name": "Update Movie - Success",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Response has updated movie', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.updateMovie).to.exist;",
-                  "    pm.expect(jsonData.data.updateMovie.title).to.equal('Updated Test Movie');",
-                  "});"
-                ]
+              "mode": "graphql",
+              "graphql": {
+                "query": "{\n  movie(id: 1) {\n    id\n    title\n    description\n    releaseYear\n    rating\n    actors {\n      name\n      character\n    }\n  }\n}"
               }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"mutation { updateMovie(id: {{movie_id}}, title: \\\"Updated Test Movie\\\", rating: 9.0) { id title rating } }\"}"
-            },
-            "url": {
-              "raw": "http://localhost:4000",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "4000"
-            }
-          }
-        },
-        {
-          "name": "Delete Movie - Success",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Delete returns true', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.deleteMovie).to.be.true;",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"mutation { deleteMovie(id: {{movie_id}}) }\"}"
-            },
-            "url": {
-              "raw": "http://localhost:4000",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "4000"
             }
           }
         },
         {
           "name": "Search Movies",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Response has search results', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.searchMovies).to.be.an('array');",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
+            "url": "{{BASE_URL}}",
             "header": [
               {
                 "key": "Content-Type",
@@ -442,18 +101,93 @@
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"query { searchMovies(title: \\\"Matrix\\\") { id title rating actors { name } genres { name } } }\"}"
-            },
-            "url": {
-              "raw": "http://localhost:4000",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "4000"
+              "mode": "graphql",
+              "graphql": {
+                "query": "{\n  searchMovies(title: \"avengers\") {\n    id\n    title\n    releaseYear\n    rating\n  }\n}"
+              }
+            }
+          }
+        },
+        {
+          "name": "Add Movie",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  addMovie(\n    title: \"My Movie\"\n    releaseYear: 2024\n    description: \"An amazing film\"\n    rating: 8.5\n  ) {\n    id\n    title\n    releaseYear\n    rating\n  }\n}"
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Movie",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  updateMovie(\n    id: 1\n    title: \"Updated Title\"\n    releaseYear: 2025\n    rating: 9.0\n  ) {\n    id\n    title\n    releaseYear\n    rating\n  }\n}"
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Movie",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  deleteMovie(id: 1)\n}"
+              }
             }
           }
         }
       ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:4000/graphql"
+    },
+    {
+      "key": "auth_token",
+      "value": ""
     }
   ]
 }
