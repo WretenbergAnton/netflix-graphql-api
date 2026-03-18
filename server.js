@@ -36,20 +36,9 @@ const server = new ApolloServer({
 async function startServer() {
   await server.start();
 
-  app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(200);
-    }
-    next();
-  });
-
   app.use(express.json());
 
-  // Bara GraphQL endpoint - Apollo Server hanterar det själv
+  // ➕ CORS CONFIG DIREKT PÅ GRAPHQL ENDPOINT
   app.use(
     '/graphql',
     expressMiddleware(server, {
@@ -58,8 +47,26 @@ async function startServer() {
           authorization: req.headers.authorization || null,
         };
       },
-    })
+    }),
+    // ➕ LÄGG TILL DENNA MIDDLEWARE EFTER APOLLO
+    (req, res, next) => {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+      }
+      next();
+    }
   );
+
+  // ➕ OPTIONS HANDLER FÖR PREFLIGHT
+  app.options('/graphql', (req, res) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.sendStatus(200);
+  });
 
   const PORT = process.env.PORT || 4000;
   
