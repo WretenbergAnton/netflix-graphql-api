@@ -49,6 +49,45 @@ async function startServer() {
     })
   );
 
+  // ➕ LÄGG TILL DENNA ROUTE FÖR APOLLO SANDBOX
+  app.get('/graphql', (req, res) => {
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <style>
+            body {
+              margin: 0;
+              overflow: hidden;
+            }
+            #embedded-sandbox {
+              height: 100vh;
+              width: 100%;
+            }
+          </style>
+          <title>Apollo Sandbox</title>
+        </head>
+        <body>
+          <div id="embedded-sandbox"></div>
+          <script src="https://embeddable-sandbox.cdn.apollographql.com/_latest/embeddable-sandbox.umd.production.min.js"></script>
+          <script>
+            new window.EmbeddedSandbox({
+              target: '#embedded-sandbox',
+              initialState: {
+                document: '{ __typename }',
+                variables: {},
+                headers: {},
+                url: 'https://netflix-graphql-api-production.up.railway.app/graphql',
+              },
+            });
+          </script>
+        </body>
+      </html>
+    `);
+  });
+
   const PORT = process.env.PORT || 4000;
   
   app.listen(PORT, '0.0.0.0', () => {
