@@ -36,9 +36,21 @@ const server = new ApolloServer({
 async function startServer() {
   await server.start();
 
+  // ➕ LÄGG TILL CORS
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    next();
+  });
+
   app.use(express.json());
 
-  // ➕ LÄGG TILL GET ROUTE FÖRST!
+  // GET - Apollo Sandbox
   app.get('/graphql', (req, res) => {
     res.send(`
       <!DOCTYPE html>
@@ -77,7 +89,7 @@ async function startServer() {
     `);
   });
 
-  // ➕ SEDAN POST ROUTE (Apollo Server)
+  // POST - GraphQL queries
   app.post('/graphql', expressMiddleware(server, {
     context: async ({ req }) => {
       return {
