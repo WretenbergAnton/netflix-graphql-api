@@ -36,7 +36,6 @@ const server = new ApolloServer({
 async function startServer() {
   await server.start();
 
-  // ➕ LÄGG TILL CORS
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
@@ -50,57 +49,17 @@ async function startServer() {
 
   app.use(express.json());
 
-app.get('/graphql', (req, res) => {
-  // Dynamisk endpoint baserad på request origin
-  const protocol = req.secure ? 'https' : 'http';
-  const host = req.get('host');
-  const endpoint = `${protocol}://${host}/graphql`;
-  
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <style>
-          body {
-            margin: 0;
-            overflow: hidden;
-          }
-          #embedded-sandbox {
-            height: 100vh;
-            width: 100%;
-          }
-        </style>
-        <title>Apollo Sandbox</title>
-      </head>
-      <body>
-        <div id="embedded-sandbox"></div>
-        <script src="https://embeddable-sandbox.cdn.apollographql.com/_latest/embeddable-sandbox.umd.production.min.js"></script>
-        <script>
-          new window.EmbeddedSandbox({
-            target: '#embedded-sandbox',
-            initialState: {
-              document: '{ __typename }',
-              variables: {},
-              headers: {},
-              url: '${endpoint}',
-            },
-          });
-        </script>
-      </body>
-    </html>
-  `);
-});
-
-  // POST - GraphQL queries
-  app.post('/graphql', expressMiddleware(server, {
-    context: async ({ req }) => {
-      return {
-        authorization: req.headers.authorization || null,
-      };
-    },
-  }));
+  // Bara GraphQL endpoint - Apollo Server hanterar det själv
+  app.use(
+    '/graphql',
+    expressMiddleware(server, {
+      context: async ({ req }) => {
+        return {
+          authorization: req.headers.authorization || null,
+        };
+      },
+    })
+  );
 
   const PORT = process.env.PORT || 4000;
   
