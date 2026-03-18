@@ -38,18 +38,7 @@ async function startServer() {
 
   app.use(express.json());
 
-  app.use(
-    '/graphql',
-    expressMiddleware(server, {
-      context: async ({ req }) => {
-        return {
-          authorization: req.headers.authorization || null,
-        };
-      },
-    })
-  );
-
-  // ➕ LÄGG TILL DENNA ROUTE FÖR APOLLO SANDBOX
+  // ➕ LÄGG TILL GET ROUTE FÖRST!
   app.get('/graphql', (req, res) => {
     res.send(`
       <!DOCTYPE html>
@@ -87,6 +76,15 @@ async function startServer() {
       </html>
     `);
   });
+
+  // ➕ SEDAN POST ROUTE (Apollo Server)
+  app.post('/graphql', expressMiddleware(server, {
+    context: async ({ req }) => {
+      return {
+        authorization: req.headers.authorization || null,
+      };
+    },
+  }));
 
   const PORT = process.env.PORT || 4000;
   
