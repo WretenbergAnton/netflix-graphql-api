@@ -13,16 +13,17 @@
     "test": "newman run netflix-api.postman_collection.json --environment netflix-api.postman_environment.json --reporters cli,json"
   },
   "dependencies": {
-  "@apollo/server": "^4.10.0",
-  "@prisma/client": "^5.9.0",
-  "bcrypt": "^5.1.1",
-  "csv-parse": "^5.6.0",
-  "dotenv": "^16.4.5",
-  "express": "^4.18.2",
-  "graphql": "^16.8.1",
-  "jsonwebtoken": "^9.0.0",
-  "pg": "^8.11.3"
-},
+    "@apollo/server": "^4.10.0",
+    "@prisma/client": "^5.9.0",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.6",
+    "csv-parse": "^5.6.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "graphql": "^16.8.1",
+    "jsonwebtoken": "^9.0.0",
+    "pg": "^8.11.3"
+  },
   "devDependencies": {
     "newman": "^6.1.0",
     "nodemon": "^3.1.0",
