@@ -50,44 +50,48 @@ async function startServer() {
 
   app.use(express.json());
 
-  // GET - Apollo Sandbox
-  app.get('/graphql', (req, res) => {
-    res.send(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <style>
-            body {
-              margin: 0;
-              overflow: hidden;
-            }
-            #embedded-sandbox {
-              height: 100vh;
-              width: 100%;
-            }
-          </style>
-          <title>Apollo Sandbox</title>
-        </head>
-        <body>
-          <div id="embedded-sandbox"></div>
-          <script src="https://embeddable-sandbox.cdn.apollographql.com/_latest/embeddable-sandbox.umd.production.min.js"></script>
-          <script>
-            new window.EmbeddedSandbox({
-              target: '#embedded-sandbox',
-              initialState: {
-                document: '{ __typename }',
-                variables: {},
-                headers: {},
-                url: 'https://netflix-graphql-api-production.up.railway.app/graphql',
-              },
-            });
-          </script>
-        </body>
-      </html>
-    `);
-  });
+app.get('/graphql', (req, res) => {
+  // Dynamisk endpoint baserad på request origin
+  const protocol = req.secure ? 'https' : 'http';
+  const host = req.get('host');
+  const endpoint = `${protocol}://${host}/graphql`;
+  
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
+          body {
+            margin: 0;
+            overflow: hidden;
+          }
+          #embedded-sandbox {
+            height: 100vh;
+            width: 100%;
+          }
+        </style>
+        <title>Apollo Sandbox</title>
+      </head>
+      <body>
+        <div id="embedded-sandbox"></div>
+        <script src="https://embeddable-sandbox.cdn.apollographql.com/_latest/embeddable-sandbox.umd.production.min.js"></script>
+        <script>
+          new window.EmbeddedSandbox({
+            target: '#embedded-sandbox',
+            initialState: {
+              document: '{ __typename }',
+              variables: {},
+              headers: {},
+              url: '${endpoint}',
+            },
+          });
+        </script>
+      </body>
+    </html>
+  `);
+});
 
   // POST - GraphQL queries
   app.post('/graphql', expressMiddleware(server, {
