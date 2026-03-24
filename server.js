@@ -9,7 +9,6 @@ require('dotenv').config();
 
 const app = express();
 
-// Kombinera resolvers
 const resolvers = {
   Query: {
     ...movieResolvers.Query,
@@ -32,12 +31,7 @@ const server = new ApolloServer({
       code: error.extensions?.code || 'INTERNAL_SERVER_ERROR',
     };
   },
-  plugins: [
-    ApolloServerPluginLandingPageLocalDefault({
-      embed: true,
-      includeCookies: true,
-    }),
-  ],
+  // ❌ REMOVE plugins section helt
 });
 
 async function startServer() {
