@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@apollo/server/express4');
-const { ApolloServerPluginLandingPageLocalDefault } = require('@apollo/server/plugin/landingPageLocalDefault');
 const typeDefs = require('./src/schema/typeDefs');
 const movieResolvers = require('./src/resolvers/movieResolvers');
 const userResolvers = require('./src/resolvers/userResolvers');
