@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@apollo/server/express4');
+const { ApolloServerPluginLandingPageLocalDefault } = require('@apollo/server/plugin/landingPageLocalDefault');
 const typeDefs = require('./src/schema/typeDefs');
 const movieResolvers = require('./src/resolvers/movieResolvers');
 const userResolvers = require('./src/resolvers/userResolvers');
@@ -32,12 +33,17 @@ const server = new ApolloServer({
       code: error.extensions?.code || 'INTERNAL_SERVER_ERROR',
     };
   },
+  plugins: [
+    ApolloServerPluginLandingPageLocalDefault({
+      embed: true,
+      includeCookies: true,
+    }),
+  ],
 });
 
 async function startServer() {
   await server.start();
 
-  // ➕ CORS CONFIGURATION - FÖRE APOLLO!
   app.use(cors({
     origin: '*',
     credentials: false,
@@ -47,7 +53,6 @@ async function startServer() {
 
   app.use(express.json());
 
-  // GraphQL endpoint
   app.use(
     '/graphql',
     expressMiddleware(server, {
