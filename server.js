@@ -30,10 +30,15 @@ const server = new ApolloServer({
       message: error.message,
       code: error.extensions?.code || 'INTERNAL_SERVER_ERROR',
     };
-  },
-  // ❌ REMOVE plugins section helt
+  }
 });
 
+/**
+ * Starts the Apollo/Express server.
+ * Initialises Apollo Server, mounts CORS and JSON middleware, attaches the
+ * GraphQL endpoint at /graphql, and begins listening on the configured PORT.
+ * @returns {Promise<void>}
+ */
 async function startServer() {
   await server.start();
 

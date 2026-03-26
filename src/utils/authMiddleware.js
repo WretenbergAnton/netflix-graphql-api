@@ -1,5 +1,11 @@
 const { verifyToken } = require('./auth');
 
+/**
+ * Extracts and validates the authenticated user's ID from the GraphQL context.
+ * @param {{ authorization?: string }} context - The Apollo Server context containing the Authorization header.
+ * @returns {number} The authenticated user's ID.
+ * @throws {Error} If the token is missing or invalid/expired.
+ */
 const getAuthenticatedUserId = (context) => {
   const token = context?.authorization?.replace('Bearer ', '');
   

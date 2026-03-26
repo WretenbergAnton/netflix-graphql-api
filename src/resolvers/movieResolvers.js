@@ -1,28 +1,17 @@
 const { PrismaClient } = require("@prisma/client");
-const { verifyToken } = require("../utils/auth");
+const { getAuthenticatedUserId } = require("../utils/authMiddleware");
 
 const prisma = new PrismaClient();
-
-const getAuthenticatedUserId = (authorization) => {
-  if (!authorization) {
-    throw new Error(
-      "Authentication required. Please provide a valid JWT token.",
-    );
-  }
-
-  const token = authorization.replace("Bearer ", "");
-  const decoded = verifyToken(token);
-
-  if (!decoded) {
-    throw new Error("Invalid or expired token");
-  }
-
-  return decoded.userId;
-};
 
 const movieResolvers = {
   // Queries
   Query: {
+    /**
+     * Returns a paginated list of movies ordered by rating descending.
+     * @param {*} _ - Unused parent resolver argument.
+     * @param {{ limit?: number, offset?: number }} args - Pagination options (default limit 10, offset 0).
+     * @returns {Promise<{ movies: object[], totalCount: number, hasNextPage: boolean, totalPages: number }>}
+     */
     movies: async (_, { limit = 10, offset = 0 }) => {
       const [movies, totalCount] = await Promise.all([
         prisma.movie.findMany({
@@ -48,6 +37,12 @@ const movieResolvers = {
       };
     },
 
+    /**
+     * Fetches a single movie by its ID, including actors and genres.
+     * @param {*} _ - Unused parent resolver argument.
+     * @param {{ id: number }} args - The movie's database ID.
+     * @returns {Promise<object | null>} The movie, or null if not found.
+     */
     movie: async (_, { id }) => {
       return await prisma.movie.findUnique({
         where: { id },
@@ -58,6 +53,12 @@ const movieResolvers = {
       });
     },
 
+    /**
+     * Searches movies by title (case-insensitive substring match), returning up to 20 results.
+     * @param {*} _ - Unused parent resolver argument.
+     * @param {{ title: string }} args - The title substring to search for.
+     * @returns {Promise<object[]>} Matching movies with actors and genres.
+     */
     searchMovies: async (_, { title }) => {
       return await prisma.movie.findMany({
         where: {
@@ -74,14 +75,25 @@ const movieResolvers = {
       });
     },
 
+    /**
+     * Returns all actors in the database.
+     * @returns {Promise<object[]>} All actors with their associated movie.
+     */
     actors: async () => {
       return await prisma.actor.findMany({
         include: {
-          movie: true,  // ← CHANGED: movie (singular)
+          movie: true,
         },
       });
     },
 
+    /**
+     * Returns all ratings for a given movie, ordered newest first.
+     * @param {*} _ - Unused parent resolver argument.
+     * @param {{ movieId: number }} args - The ID of the movie to fetch ratings for.
+     * @returns {Promise<object[]>} Ratings for the movie.
+     * @throws {Error} If movieId is not provided.
+     */
     ratings: async (_, { movieId }) => {
       if (!movieId) {
         throw new Error("movieId is required");
@@ -96,6 +108,14 @@ const movieResolvers = {
 
   // Mutations
   Mutation: {
+    /**
+     * Creates a new movie. Requires authentication.
+     * @param {*} _ - Unused parent resolver argument.
+     * @param {{ title: string, releaseYear?: number, description?: string, rating?: number }} args - Movie data.
+     * @param {{ authorization: string | null }} context - Apollo context containing the Authorization header.
+     * @returns {Promise<object>} The newly created movie.
+     * @throws {Error} If the user is not authenticated or title is missing.
+     */
     addMovie: async (
       _,
       { title, releaseYear, description, rating },
@@ -133,6 +153,14 @@ const movieResolvers = {
       };
     },
 
+    /**
+     * Updates an existing movie. Only the user who created the movie may update it.
+     * @param {*} _ - Unused parent resolver argument.
+     * @param {{ id: number, title?: string, releaseYear?: number, description?: string, rating?: number }} args - Fields to update.
+     * @param {{ authorization: string | null }} context - Apollo context containing the Authorization header.
+     * @returns {Promise<object | null>} The updated movie.
+     * @throws {Error} If unauthenticated, movie not found, or user does not own the movie.
+     */
     updateMovie: async (
       _,
       { id, title, releaseYear, description, rating },
@@ -178,6 +206,14 @@ const movieResolvers = {
       };
     },
 
+    /**
+     * Deletes a movie by ID. Only the user who created the movie may delete it.
+     * @param {*} _ - Unused parent resolver argument.
+     * @param {{ id: number }} args - The ID of the movie to delete.
+     * @param {{ authorization: string | null }} context - Apollo context containing the Authorization header.
+     * @returns {Promise<boolean>} True if deletion was successful.
+     * @throws {Error} If unauthenticated, movie not found, or user does not own the movie.
+     */
     deleteMovie: async (_, { id }, context) => {
       const userId = getAuthenticatedUserId(context.authorization);
 
