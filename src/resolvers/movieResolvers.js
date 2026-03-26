@@ -121,7 +121,7 @@ const movieResolvers = {
       { title, releaseYear, description, rating },
       context,
     ) => {
-      const userId = getAuthenticatedUserId(context.authorization);
+      const userId = getAuthenticatedUserId(context);
 
       if (!title) {
         throw new Error("Title is required");
@@ -166,7 +166,7 @@ const movieResolvers = {
       { id, title, releaseYear, description, rating },
       context,
     ) => {
-      const userId = getAuthenticatedUserId(context.authorization);
+      const userId = getAuthenticatedUserId(context);
 
       const movie = await prisma.movie.findUnique({
         where: { id },
@@ -215,7 +215,7 @@ const movieResolvers = {
      * @throws {Error} If unauthenticated, movie not found, or user does not own the movie.
      */
     deleteMovie: async (_, { id }, context) => {
-      const userId = getAuthenticatedUserId(context.authorization);
+      const userId = getAuthenticatedUserId(context);
 
       const movie = await prisma.movie.findUnique({
         where: { id },
