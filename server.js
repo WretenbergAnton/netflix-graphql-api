@@ -1,12 +1,12 @@
-const express = require('express');
-const cors = require('cors');
-const { ApolloServer } = require('@apollo/server');
-const { expressMiddleware } = require('@apollo/server/express4');
-const { ApolloServerPluginLandingPageProductionDefault } = require('@apollo/server/plugin/landingPage/default');
-const typeDefs = require('./src/schema/typeDefs');
-const movieResolvers = require('./src/resolvers/movieResolvers');
-const userResolvers = require('./src/resolvers/userResolvers');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { ApolloServerPluginLandingPageProductionDefault } from '@apollo/server/plugin/landingPage/default';
+import typeDefs from './src/schema/typeDefs.js';
+import movieResolvers from './src/resolvers/movieResolvers.js';
+import userResolvers from './src/resolvers/userResolvers.js';
+import 'dotenv/config';
 
 const app = express();
 
@@ -34,7 +34,7 @@ const server = new ApolloServer({
       message: error.message,
       code: error.extensions?.code || 'INTERNAL_SERVER_ERROR',
     };
-  }
+  },
 });
 
 /**
@@ -67,7 +67,7 @@ async function startServer() {
   );
 
   const PORT = process.env.PORT || 4000;
-  
+
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`GraphQL Server is running at http://0.0.0.0:${PORT}/graphql`);
   });

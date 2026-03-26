@@ -1,5 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
-const { hashPassword, comparePassword, generateToken } = require('../utils/auth');
+import { PrismaClient } from '@prisma/client';
+import { hashPassword, comparePassword, generateToken } from '../utils/auth.js';
 
 const prisma = new PrismaClient();
 
@@ -91,4 +91,4 @@ const userResolvers = {
   },
 };
 
-module.exports = userResolvers;
+export default userResolvers;

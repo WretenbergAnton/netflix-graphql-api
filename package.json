@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Netflix GraphQL API with authentication",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
@@ -10,6 +11,8 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "seed": "node prisma/seed.js",
+    "lint": "eslint src/ server.js",
+    "lint:fix": "eslint src/ server.js --fix",
     "test": "newman run netflix-api.postman_collection.json --environment netflix-api.postman_environment.json --reporters cli,json"
   },
   "dependencies": {
@@ -26,6 +29,8 @@
     "prisma": "^6.19.2"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.1.0",
     "newman": "^6.1.0",
     "nodemon": "^3.1.0"
   },

@@ -1,5 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
-const { getAuthenticatedUserId } = require("../utils/authMiddleware");
+import { PrismaClient } from '@prisma/client';
+import { getAuthenticatedUserId } from '../utils/authMiddleware.js';
 
 const prisma = new PrismaClient();
 
@@ -17,7 +17,7 @@ const movieResolvers = {
         prisma.movie.findMany({
           take: limit,
           skip: offset,
-          orderBy: { rating: "desc" },
+          orderBy: { rating: 'desc' },
           include: {
             actors: true,
             genres: true,
@@ -64,7 +64,7 @@ const movieResolvers = {
         where: {
           title: {
             contains: title,
-            mode: "insensitive",
+            mode: 'insensitive',
           },
         },
         take: 20,
@@ -96,12 +96,12 @@ const movieResolvers = {
      */
     ratings: async (_, { movieId }) => {
       if (!movieId) {
-        throw new Error("movieId is required");
+        throw new Error('movieId is required');
       }
       
       return await prisma.rating.findMany({
         where: { movieId },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
       });
     },
   },
@@ -124,7 +124,7 @@ const movieResolvers = {
       const userId = getAuthenticatedUserId(context);
 
       if (!title) {
-        throw new Error("Title is required");
+        throw new Error('Title is required');
       }
 
       const movie = await prisma.movie.create({
@@ -173,11 +173,11 @@ const movieResolvers = {
       });
 
       if (!movie) {
-        throw new Error("Movie not found");
+        throw new Error('Movie not found');
       }
 
       if (movie.createdBy !== userId) {
-        throw new Error("You can only update your own movies");
+        throw new Error('You can only update your own movies');
       }
 
       const updatedMovie = await prisma.movie.update({
@@ -222,11 +222,11 @@ const movieResolvers = {
       });
 
       if (!movie) {
-        throw new Error("Movie not found");
+        throw new Error('Movie not found');
       }
 
       if (movie.createdBy !== userId) {
-        throw new Error("You can only delete your own movies");
+        throw new Error('You can only delete your own movies');
       }
 
       await prisma.movie.delete({
@@ -238,4 +238,4 @@ const movieResolvers = {
   },
 };
 
-module.exports = movieResolvers;
+export default movieResolvers;

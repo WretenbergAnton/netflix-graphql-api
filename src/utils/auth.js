@@ -1,5 +1,5 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 /**
  * Hashes a plain-text password using bcrypt.
@@ -42,14 +42,9 @@ const verifyToken = (token) => {
   if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET environment variable is not set');
   try {
     return jwt.verify(token, process.env.JWT_SECRET);
-  } catch (error) {
+  } catch {
     return null;
   }
 };
 
-module.exports = {
-  hashPassword,
-  comparePassword,
-  generateToken,
-  verifyToken,
-};
+export { hashPassword, comparePassword, generateToken, verifyToken };
