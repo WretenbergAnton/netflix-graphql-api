@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@apollo/server/express4');
+const { ApolloServerPluginLandingPageProductionDefault } = require('@apollo/server/plugin/landingPage/default');
 const typeDefs = require('./src/schema/typeDefs');
 const movieResolvers = require('./src/resolvers/movieResolvers');
 const userResolvers = require('./src/resolvers/userResolvers');
@@ -24,6 +25,9 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   introspection: true,
+  plugins: [
+    ApolloServerPluginLandingPageProductionDefault({ embed: true, includeCookies: true }),
+  ],
   formatError: (error) => {
     console.error('GraphQL Error:', error.message);
     return {
