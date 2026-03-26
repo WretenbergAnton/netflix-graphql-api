@@ -30,7 +30,7 @@ const server = new ApolloServer({
   formatError: (error) => {
     console.error('GraphQL Error:', error.message);
     return {
-      message: error.message,
+      error: error.message,
       code: error.extensions?.code || 'INTERNAL_SERVER_ERROR',
     };
   },

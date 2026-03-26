@@ -1,3 +1,4 @@
+import { GraphQLError } from 'graphql';
 import { PrismaClient } from '@prisma/client';
 import { hashPassword, comparePassword, generateToken } from '../utils/auth.js';
 
@@ -14,7 +15,9 @@ const userResolvers = {
      */
     registerUser: async (_, { email, password, name }) => {
       if (!email || !password) {
-        throw new Error('Email and password are required');
+        throw new GraphQLError('Email and password are required', {
+          extensions: { code: 'BAD_USER_INPUT', http: { status: 400 } },
+        });
       }
 
       const existingUser = await prisma.user.findUnique({
@@ -22,7 +25,9 @@ const userResolvers = {
       });
 
       if (existingUser) {
-        throw new Error('User with this email already exists');
+        throw new GraphQLError('User with this email already exists', {
+          extensions: { code: 'BAD_USER_INPUT', http: { status: 400 } },
+        });
       }
 
       const hashedPassword = await hashPassword(password);
@@ -57,7 +62,9 @@ const userResolvers = {
      */
     loginUser: async (_, { email, password }) => {
       if (!email || !password) {
-        throw new Error('Email and password are required');
+        throw new GraphQLError('Email and password are required', {
+          extensions: { code: 'BAD_USER_INPUT', http: { status: 400 } },
+        });
       }
 
       const user = await prisma.user.findUnique({
@@ -65,13 +72,17 @@ const userResolvers = {
       });
 
       if (!user) {
-        throw new Error('Invalid email or password');
+        throw new GraphQLError('Invalid email or password', {
+          extensions: { code: 'UNAUTHENTICATED', http: { status: 401 } },
+        });
       }
 
       const isPasswordValid = await comparePassword(password, user.password);
 
       if (!isPasswordValid) {
-        throw new Error('Invalid email or password');
+        throw new GraphQLError('Invalid email or password', {
+          extensions: { code: 'UNAUTHENTICATED', http: { status: 401 } },
+        });
       }
 
       const token = generateToken(user.id);

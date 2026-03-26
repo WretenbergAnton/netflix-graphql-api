@@ -1,3 +1,4 @@
+import { GraphQLError } from 'graphql';
 import { PrismaClient } from '@prisma/client';
 import { getAuthenticatedUserId } from '../utils/authMiddleware.js';
 
@@ -124,7 +125,9 @@ const movieResolvers = {
       const userId = getAuthenticatedUserId(context);
 
       if (!title) {
-        throw new Error('Title is required');
+        throw new GraphQLError('Title is required', {
+          extensions: { code: 'BAD_USER_INPUT', http: { status: 400 } },
+        });
       }
 
       const movie = await prisma.movie.create({
@@ -173,11 +176,15 @@ const movieResolvers = {
       });
 
       if (!movie) {
-        throw new Error('Movie not found');
+        throw new GraphQLError('Movie not found', {
+          extensions: { code: 'NOT_FOUND', http: { status: 404 } },
+        });
       }
 
       if (movie.createdBy !== userId) {
-        throw new Error('You can only update your own movies');
+        throw new GraphQLError('You can only update your own movies', {
+          extensions: { code: 'FORBIDDEN', http: { status: 403 } },
+        });
       }
 
       const updatedMovie = await prisma.movie.update({
@@ -222,11 +229,15 @@ const movieResolvers = {
       });
 
       if (!movie) {
-        throw new Error('Movie not found');
+        throw new GraphQLError('Movie not found', {
+          extensions: { code: 'NOT_FOUND', http: { status: 404 } },
+        });
       }
 
       if (movie.createdBy !== userId) {
-        throw new Error('You can only delete your own movies');
+        throw new GraphQLError('You can only delete your own movies', {
+          extensions: { code: 'FORBIDDEN', http: { status: 403 } },
+        });
       }
 
       await prisma.movie.delete({
