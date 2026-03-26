@@ -5,9 +5,7 @@ En fullständig GraphQL API byggt med Node.js, Apollo Server v4 och PostgreSQL. 
 **Live API:** https://netflix-graphql-api-production.up.railway.app/graphql
 
 **Test API Instantly:**
-1. Go to: https://studio.apollographql.com/sandbox/explorer
-2. Paste endpoint: `https://netflix-graphql-api-production.up.railway.app/graphql`
-3. Start testing queries and mutations!
+Öppna Apollo Sandbox direkt i webbläsaren: https://netflix-graphql-api-production.up.railway.app/graphql
 
 **GitHub:** https://github.com/WretenbergAnton/netflix-graphql-api
 ---
@@ -305,10 +303,9 @@ npx newman run netflix-api.postman_collection.json \
 
 ### Interaktiv testning
 
-**Apollo Sandbox:**
+**Apollo Sandbox (inbyggd):**
 ```
-https://sandbox.apollo.dev
-Endpoint: https://netflix-graphql-api-production.up.railway.app/graphql
+https://netflix-graphql-api-production.up.railway.app/graphql
 ```
 
 **Postman Web:**
@@ -399,5 +396,5 @@ Alla fel returnerar ett konsistent format:
 
 ---
 
-**Uppdaterad:** 24 mars 2026  
+**Uppdaterad:** 26 mars 2026  
 **Av:** Anton Wretenberg
