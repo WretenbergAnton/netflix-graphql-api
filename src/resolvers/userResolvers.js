@@ -4,8 +4,6 @@ import { hashPassword, comparePassword, generateToken } from '../utils/auth.js';
 const prisma = new PrismaClient();
 
 const userResolvers = {
-  Query: {},
-
   Mutation: {
     /**
      * Registers a new user account and returns a JWT.

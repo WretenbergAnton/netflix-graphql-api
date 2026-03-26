@@ -1,6 +1,5 @@
 const typeDefs = `
   type Query {
-    hello: String
     movies(limit: Int, offset: Int): MovieConnection!
     movie(id: Int!): Movie
     searchMovies(title: String!): [Movie!]!

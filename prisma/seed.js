@@ -1,7 +1,7 @@
-const { PrismaClient } = require('@prisma/client');
-const fs = require('fs');
-const { parse } = require('csv-parse/sync');
-const bcrypt = require('bcrypt');
+import { PrismaClient } from '@prisma/client';
+import fs from 'fs';
+import { parse } from 'csv-parse/sync';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -21,9 +21,9 @@ function parseGenres(genreString) {
 }
 
 async function main() {
-  console.log('🎬 Starting Netflix data import with normalization...\n');
+  console.log('Starting Netflix data import with normalization...\n');
 
-  // Step 1: Create admin user
+  // Create admin user
   console.log('👤 Creating admin user...');
   let adminUser = await prisma.user.findUnique({
     where: { email: 'admin@netflix.com' },
@@ -38,11 +38,11 @@ async function main() {
         name: 'Netflix Admin',
       },
     });
-    console.log(`✅ Created admin user: ${adminUser.email}\n`);
+    console.log(`Created admin user: ${adminUser.email}\n`);
   }
 
   // Step 2: Import Movies with normalized data
-  console.log('🎥 Importing movies with actors and genres...');
+  console.log('Importing movies with actors and genres...');
   const movieFileContent = fs.readFileSync('./prisma/data/netflix_movies_detailed_up_to_2025.csv', 'utf-8');
   
   const movieRecords = parse(movieFileContent, {
@@ -101,18 +101,18 @@ async function main() {
       }
 
       if (movieCount % 1000 === 0) {
-        console.log(`✅ Imported ${movieCount} movies, ${actorCount} actors, ${genreCount} genres...`);
+        console.log(`Imported ${movieCount} movies, ${actorCount} actors, ${genreCount} genres...`);
       }
     } catch (error) {
       // Silently skip duplicates
     }
   }
 
-  console.log(`\n✅ Import complete!`);
+  console.log(`\n Import complete!`);
   console.log(`   Movies: ${movieCount}`);
   console.log(`   Actors: ${actorCount}`);
   console.log(`   Genres: ${genreCount}\n`);
-  console.log(`🎉 Netflix data import complete!`);
+  console.log(` Netflix data import complete!`);
   console.log(`\nAdmin credentials:`);
   console.log(`Email: admin@netflix.com`);
   console.log(`Password: admin123`);

@@ -13,7 +13,6 @@ const app = express();
 const resolvers = {
   Query: {
     ...movieResolvers.Query,
-    ...userResolvers.Query,
   },
   Mutation: {
     ...userResolvers.Mutation,
